@@ -2,8 +2,6 @@
 
 **Topic-Clustered News Timeline** — a full-stack system that ingests live articles from multiple RSS feeds, automatically groups related articles into topic clusters, and visualizes them as an interactive timeline.
 
-> Built for the Xponentium India Full-Stack Developer Internship Take-Home Assessment.
-
 ---
 
 ## Live Demo
