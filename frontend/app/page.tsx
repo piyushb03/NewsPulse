@@ -7,6 +7,7 @@ import { Timeline } from '@/components/Timeline';
 import { ClusterDetailPanel } from '@/components/ClusterDetailPanel';
 import { SourceFilter } from '@/components/SourceFilter';
 import { RefreshButton } from '@/components/RefreshButton';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function HomePage() {
   const {
@@ -139,8 +140,9 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Refresh button */}
-          <div style={{ flexShrink: 0 }}>
+          {/* Actions */}
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ThemeToggle />
             <RefreshButton
               isIngesting={isIngesting}
               ingestJob={ingestJob}

@@ -138,7 +138,7 @@ export function ClusterDetailPanel({
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0, 0, 0, 0.25)',
+          background: 'var(--backdrop-bg)',
           backdropFilter: 'blur(2px)',
           zIndex: 50,
           animation: 'fadeIn 0.15s ease',
@@ -161,7 +161,7 @@ export function ClusterDetailPanel({
           background: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-lg)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)',
+          boxShadow: 'var(--modal-shadow)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
