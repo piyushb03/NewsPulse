@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { format, parseISO, differenceInHours, isValid } from 'date-fns';
+import React from 'react';
+import { formatDistanceToNow, parseISO, isValid } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TimelineCluster } from '@/types';
 import { getSourceColor } from './SourceFilter';
 
@@ -21,51 +22,14 @@ function safeParseISO(s: string | null): Date | null {
   }
 }
 
-function formatDate(s: string | null): string {
+function getRelativeTime(s: string | null): string {
   const d = safeParseISO(s);
-  if (!d) return '—';
-  return format(d, 'MMM d, HH:mm');
+  if (!d) return 'Recently';
+  return formatDistanceToNow(d, { addSuffix: true });
 }
 
-/**
- * Timeline visualization component.
- *
- * Architecture:
- * - Computes a global time range from all clusters' start/end dates.
- * - Maps each cluster to a horizontal bar spanning its time window as a % of total range.
- * - Clusters are stacked vertically, labeled with their topic label.
- * - Clicking a cluster row calls onClusterClick.
- * - Intensity (article count) is communicated via bar height/opacity.
- */
 export function Timeline({ clusters, onClusterClick, selectedClusterId }: TimelineProps) {
-  const { minDate, maxDate, totalMs } = useMemo(() => {
-    let min: Date | null = null;
-    let max: Date | null = null;
-
-    for (const c of clusters) {
-      const start = safeParseISO(c.start);
-      const end = safeParseISO(c.end);
-      if (start && (!min || start < min)) min = start;
-      if (end && (!max || end > max)) max = end;
-      if (start && (!max || start > max)) max = start;
-      if (end && (!min || end < min)) min = end;
-    }
-
-    const totalMs = min && max ? Math.max(max.getTime() - min.getTime(), 1) : 1;
-    return { minDate: min, maxDate: max, totalMs };
-  }, [clusters]);
-
-  // Generate time axis ticks (6 evenly spaced)
-  const ticks = useMemo(() => {
-    if (!minDate || !maxDate) return [];
-    const tickCount = 6;
-    return Array.from({ length: tickCount }, (_, i) => {
-      const ms = minDate.getTime() + (totalMs / (tickCount - 1)) * i;
-      return new Date(ms);
-    });
-  }, [minDate, maxDate, totalMs]);
-
-  if (clusters.length === 0) {
+  if (!clusters || clusters.length === 0) {
     return (
       <div
         style={{
@@ -96,276 +60,143 @@ export function Timeline({ clusters, onClusterClick, selectedClusterId }: Timeli
         </svg>
         <div>
           <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-text-dim)' }}>
-            No clusters yet
+            No stories available
           </p>
           <p style={{ fontSize: '13px', marginTop: '4px' }}>
-            Click &ldquo;Refresh Data&rdquo; to fetch and group the latest articles.
+            Click &ldquo;Refresh Data&rdquo; to fetch and organize the latest news.
           </p>
         </div>
       </div>
     );
   }
 
-  // Sort clusters by start time
+  // Sort by latest update (freshest stories first)
   const sorted = [...clusters].sort((a, b) => {
-    const aDate = safeParseISO(a.start);
-    const bDate = safeParseISO(b.start);
+    const aDate = safeParseISO(a.end) || safeParseISO(a.start);
+    const bDate = safeParseISO(b.end) || safeParseISO(b.start);
+    if (!aDate && !bDate) return 0;
     if (!aDate) return 1;
     if (!bDate) return -1;
-    return aDate.getTime() - bDate.getTime();
+    return bDate.getTime() - aDate.getTime();
   });
 
-  const maxArticleCount = Math.max(...clusters.map((c) => c.article_count), 1);
-
-  function getBarStyle(cluster: TimelineCluster): React.CSSProperties {
-    const start = safeParseISO(cluster.start);
-    const endRaw = safeParseISO(cluster.end);
-
-    if (!start || !minDate) {
-      return { left: '0%', width: '2%' };
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
     }
+  };
 
-    const endMs: number = endRaw !== null ? endRaw.getTime() : start.getTime();
-    const left = ((start.getTime() - minDate.getTime()) / totalMs) * 100;
-    const width = Math.max(((endMs - start.getTime()) / totalMs) * 100, 0.5);
-
-    return {
-      left: `${Math.min(left, 99.5)}%`,
-      width: `${Math.min(width, 100 - left)}%`,
-    };
-  }
-
-  // Determine primary source color for each cluster
-  function getPrimaryColor(cluster: TimelineCluster): string {
-    if (cluster.sources.length === 0) return '#3b82f6';
-    return getSourceColor(cluster.sources[0]);
-  }
-
-  const isSelected = (id: number) => id === selectedClusterId;
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
 
   return (
-    <div
-      role="region"
-      aria-label="News cluster timeline"
-      style={{ width: '100%' }}
+    <motion.div
+      role="list"
+      aria-label="News stories feed"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '16px',
+        width: '100%',
+      }}
     >
-      {/* Time axis */}
-      <div
-        style={{
-          position: 'relative',
-          height: '28px',
-          marginBottom: '8px',
-          marginLeft: '200px',
-          paddingRight: '16px',
-        }}
-        aria-hidden="true"
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'flex-end',
-          }}
-        >
-          {ticks.map((tick, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                left: `${(i / (ticks.length - 1)) * 100}%`,
-                transform: i === 0 ? 'none' : i === ticks.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)',
-                fontSize: '11px',
-                color: 'var(--color-text-muted)',
-                whiteSpace: 'nowrap',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {format(tick, 'MMM d')}
-            </div>
-          ))}
-        </div>
-        {/* Axis line */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            backgroundColor: 'var(--color-border)',
-          }}
-        />
-      </div>
-
-      {/* Cluster rows */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '3px',
-        }}
-      >
+      <AnimatePresence mode="popLayout">
         {sorted.map((cluster) => {
-          const barStyle = getBarStyle(cluster);
-          const color = getPrimaryColor(cluster);
-          const selected = isSelected(cluster.id);
-          const intensity = cluster.article_count / maxArticleCount;
-          const barHeight = Math.max(18, Math.round(18 + intensity * 16));
+        const selected = cluster.id === selectedClusterId;
+        
+        // Format the TF-IDF label to read more like a topic list
+        const cleanLabel = cluster.label.split(' · ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(', ');
 
-          return (
-            <div
-              key={cluster.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0',
-                height: `${barHeight + 10}px`,
-              }}
-            >
-              {/* Label */}
-              <div
-                style={{
-                  width: '200px',
-                  flexShrink: 0,
-                  paddingRight: '12px',
-                  overflow: 'hidden',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '11.5px',
-                    color: selected ? 'var(--color-accent-light)' : 'var(--color-text-dim)',
-                    fontWeight: selected ? 600 : 400,
-                    display: 'block',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    transition: 'color 0.15s ease',
-                  }}
-                  title={cluster.label}
-                >
-                  {cluster.label}
-                </span>
-              </div>
+        return (
+          <motion.button
+            layout
+            variants={itemVariants}
+            initial="hidden"
+            animate="show"
+            exit={{ opacity: 0, scale: 0.95 }}
+            whileHover={{ y: -4, boxShadow: 'var(--shadow-md)', borderColor: 'var(--color-border-hover)' }}
+            whileTap={{ scale: 0.98 }}
+            key={cluster.id}
+            role="listitem"
+            onClick={() => onClusterClick(cluster.id)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              textAlign: 'left',
+              background: selected ? 'var(--color-surface-2)' : 'var(--color-surface)',
+              border: `1px solid ${selected ? 'var(--color-border-hover)' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-md)',
+              padding: '20px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            {/* Top row: Time and Article count */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '12px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {getRelativeTime(cluster.end || cluster.start)}
+              </span>
+              <span style={{ 
+                fontSize: '11px', 
+                fontWeight: 600, 
+                color: 'var(--color-accent)', 
+                background: 'var(--color-accent-light)', 
+                WebkitBackgroundClip: 'text',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)'
+              }}>
+                {cluster.article_count} article{cluster.article_count !== 1 ? 's' : ''}
+              </span>
+            </div>
 
-              {/* Timeline track */}
-              <div
-                style={{
-                  flex: 1,
-                  position: 'relative',
-                  height: `${barHeight}px`,
-                  paddingRight: '16px',
-                }}
-              >
-                {/* Track background */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundColor: 'var(--color-surface-2)',
-                    borderRadius: '4px',
-                  }}
-                />
+            {/* Title / Label */}
+            <h3 style={{ 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              color: 'var(--color-text)', 
+              lineHeight: 1.4,
+              marginBottom: '16px',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
+              {cleanLabel}
+            </h3>
 
-                {/* The bar */}
-                <button
-                  onClick={() => onClusterClick(cluster.id)}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    bottom: 0,
-                    ...barStyle,
-                    backgroundColor: selected
-                      ? color
-                      : color + Math.round(intensity * 120 + 80).toString(16).padStart(2, '0'),
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    border: selected
-                      ? `1px solid ${color}`
-                      : '1px solid transparent',
-                    outline: 'none',
-                    transition: 'background-color 0.15s ease, opacity 0.15s ease, border-color 0.15s ease',
-                    minWidth: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.opacity = '0.85';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.opacity = '1';
-                  }}
-                  aria-label={`${cluster.label} — ${cluster.article_count} article${cluster.article_count !== 1 ? 's' : ''}, ${formatDate(cluster.start)} to ${formatDate(cluster.end)}`}
-                  aria-pressed={selected}
-                >
-                  {/* Article count badge if big enough */}
-                  {parseFloat(barStyle.width as string) > 4 && (
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        color: 'var(--bar-text)',
-                        pointerEvents: 'none',
-                        whiteSpace: 'nowrap',
-                        padding: '0 4px',
-                      }}
-                    >
-                      {cluster.article_count}
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {/* Count + range metadata */}
-              <div
-                style={{
-                  width: '90px',
-                  flexShrink: 0,
-                  paddingLeft: '8px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--color-text-muted)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {cluster.article_count} art.
-                </span>
-                <span
+            {/* Bottom row: Sources */}
+            <div style={{ marginTop: 'auto', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {cluster.sources.map(source => (
+                <span 
+                  key={source}
                   style={{
                     fontSize: '10px',
-                    color: 'var(--color-text-muted)',
-                    opacity: 0.7,
+                    color: getSourceColor(source),
+                    background: 'var(--color-surface-2)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    fontWeight: 500,
                   }}
                 >
-                  {cluster.sources.slice(0, 2).join(', ')}
-                  {cluster.sources.length > 2 ? ' +more' : ''}
+                  {source}
                 </span>
-              </div>
+              ))}
             </div>
-          );
-        })}
-      </div>
-
-      {/* Bottom axis line */}
-      <div
-        style={{
-          height: '1px',
-          backgroundColor: 'var(--color-border)',
-          marginTop: '8px',
-          marginLeft: '200px',
-          marginRight: '16px',
-        }}
-        aria-hidden="true"
-      />
-    </div>
+          </motion.button>
+        );
+      })}
+      </AnimatePresence>
+    </motion.div>
   );
 }

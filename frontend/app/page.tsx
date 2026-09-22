@@ -8,6 +8,7 @@ import { ClusterDetailPanel } from '@/components/ClusterDetailPanel';
 import { SourceFilter } from '@/components/SourceFilter';
 import { RefreshButton } from '@/components/RefreshButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { motion } from 'framer-motion';
 
 export default function HomePage() {
   const {
@@ -154,7 +155,10 @@ export default function HomePage() {
       </header>
 
       {/* ── Main content ── */}
-      <main
+      <motion.main
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
         style={{
           flex: 1,
           maxWidth: '1400px',
@@ -178,77 +182,65 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Timeline section */}
-        <section
-          aria-label="Topic cluster timeline"
-          style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-md)',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Section header */}
-          <div
-            style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid var(--color-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <h1
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--color-text)',
-                  margin: 0,
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                Topic Timeline
-              </h1>
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: 'var(--color-text-muted)',
-                  marginTop: '2px',
-                }}
-                aria-live="polite"
-              >
-                {isLoading
-                  ? 'Loading clusters…'
-                  : error
-                  ? `Error: ${error}`
-                  : clusters.length === 0
-                  ? 'No clusters — click Refresh Data to start.'
-                  : `${clusters.length} cluster${clusters.length !== 1 ? 's' : ''} · click any bar to see articles`}
-              </p>
-            </div>
-            {!isLoading && !error && clusters.length > 0 && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  color: 'var(--color-text-muted)',
-                  background: 'var(--color-surface-2)',
-                  padding: '3px 8px',
-                  borderRadius: '3px',
-                  border: '1px solid var(--color-border)',
-                }}
-              >
-                BBC · NPR · The Guardian · Al Jazeera
-              </span>
-            )}
+          {/* Hero Intro */}
+          <div style={{ marginBottom: '8px', padding: '0 4px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
+              Discover the whole story.
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-text-muted)', maxWidth: '600px', lineHeight: 1.5 }}>
+              News Pulse uses AI to automatically group related articles from top publishers into single storylines. 
+              Explore how breaking news develops over time.
+            </p>
           </div>
+
+          {/* Timeline section */}
+          <section
+            aria-label="News Timeline"
+          >
+            {/* Section header */}
+            <div
+              style={{
+                padding: '0 4px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: 'var(--color-text)',
+                    margin: 0,
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Live News Timeline
+                </h2>
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--color-text-muted)',
+                    marginTop: '4px',
+                  }}
+                  aria-live="polite"
+                >
+                  {isLoading
+                    ? 'Fetching latest stories…'
+                    : error
+                    ? `Error: ${error}`
+                    : clusters.length === 0
+                    ? 'No stories found — click Refresh Data to start.'
+                    : `${clusters.length} active stor${clusters.length !== 1 ? 'ies' : 'y'} · click any bar to read articles`}
+                </p>
+              </div>
+            </div>
 
           {/* Timeline body */}
           <div
             style={{
-              padding: '16px 20px',
-              overflowX: 'auto',
+              padding: '16px 4px',
               minHeight: '200px',
               position: 'relative',
             }}
@@ -302,7 +294,7 @@ export default function HomePage() {
                 </span>
               </div>
             ) : (
-              <div style={{ minWidth: '640px' }}>
+              <div>
                 <Timeline
                   clusters={clusters}
                   onClusterClick={handleClusterClick}
@@ -320,7 +312,7 @@ export default function HomePage() {
           error={clusterError}
           onClose={handleCloseDetail}
         />
-      </main>
+      </motion.main>
 
       {/* ── Footer ── */}
       <footer

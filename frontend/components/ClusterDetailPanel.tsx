@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { format, parseISO, isValid } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ClusterDetail, Article } from '@/types';
 
 interface ClusterDetailPanelProps {
@@ -128,47 +129,51 @@ export function ClusterDetailPanel({
 }: ClusterDetailPanelProps) {
   const panelVisible = isLoading || error !== null || cluster !== null;
 
-  if (!panelVisible) return null;
-
   return (
-    <>
-      {/* Backdrop overlay */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'var(--backdrop-bg)',
-          backdropFilter: 'blur(2px)',
-          zIndex: 50,
-          animation: 'fadeIn 0.15s ease',
-        }}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {panelVisible && (
+        <>
+          {/* Backdrop overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'var(--backdrop-bg)',
+              backdropFilter: 'blur(2px)',
+              zIndex: 50,
+            }}
+            aria-hidden="true"
+          />
 
-      {/* Modal */}
-      <div
-        role="dialog"
-        aria-label="Cluster detail"
-        aria-modal="true"
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 'min(680px, calc(100vw - 48px))',
-          maxHeight: 'calc(100vh - 80px)',
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--modal-shadow)',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 51,
-          animation: 'modalIn 0.2s ease',
-        }}
-      >
+          {/* Modal */}
+          <motion.div
+            role="dialog"
+            aria-label="Cluster detail"
+            aria-modal="true"
+            initial={{ opacity: 0, scale: 0.95, y: '-48%', x: '-50%' }}
+            animate={{ opacity: 1, scale: 1, y: '-50%', x: '-50%' }}
+            exit={{ opacity: 0, scale: 0.95, y: '-48%', x: '-50%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              width: 'min(680px, calc(100vw - 48px))',
+              maxHeight: 'calc(100vh - 80px)',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--modal-shadow)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 51,
+            }}
+          >
         {/* Header */}
         <div
           style={{
@@ -325,16 +330,10 @@ export function ClusterDetailPanel({
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
           }
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes modalIn {
-            from { opacity: 0; transform: translate(-50%, -48%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-          }
         `}</style>
-      </div>
-    </>
+      </motion.div>
+      </>
+      )}
+    </AnimatePresence>
   );
 }
