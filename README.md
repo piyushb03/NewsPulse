@@ -4,6 +4,25 @@
 
 ---
 
+## Screenshots
+
+<div align="center">
+  <img src="docs/assets/homescreen_light.png" alt="Light Mode Story Feed" width="800"/>
+  <p><em>Modern, staggered Story Cards grid featuring Framer Motion spring animations</em></p>
+  
+  <br>
+
+  <img src="docs/assets/homescreen_dark.png" alt="Dark Mode Story Feed" width="800"/>
+  <p><em>Seamless Dark Mode integration with local storage persistence</em></p>
+
+  <br>
+
+  <img src="docs/assets/modal_detail.png" alt="Cluster Detail Modal" width="800"/>
+  <p><em>Centered, animated cluster detail modal with blurred backdrop</em></p>
+</div>
+
+---
+
 ## Live Demo
 
 | Layer | URL |
