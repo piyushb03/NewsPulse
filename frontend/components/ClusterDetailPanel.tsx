@@ -131,170 +131,210 @@ export function ClusterDetailPanel({
   if (!panelVisible) return null;
 
   return (
-    <div
-      role="complementary"
-      aria-label="Cluster detail"
-      style={{
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-md)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        maxHeight: '70vh',
-      }}
-    >
-      {/* Header */}
+    <>
+      {/* Backdrop overlay */}
       <div
+        onClick={onClose}
         style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.25)',
+          backdropFilter: 'blur(2px)',
+          zIndex: 50,
+          animation: 'fadeIn 0.15s ease',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Modal */}
+      <div
+        role="dialog"
+        aria-label="Cluster detail"
+        aria-modal="true"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 'min(680px, calc(100vw - 48px))',
+          maxHeight: 'calc(100vh - 80px)',
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)',
+          overflow: 'hidden',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '16px 20px',
-          borderBottom: '1px solid var(--color-border)',
-          flexShrink: 0,
+          flexDirection: 'column',
+          zIndex: 51,
+          animation: 'modalIn 0.2s ease',
         }}
       >
-        <div>
-          {isLoading ? (
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '18px 24px',
+            borderBottom: '1px solid var(--color-border)',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {isLoading ? (
+              <div
+                style={{
+                  width: '200px',
+                  height: '18px',
+                  background: 'var(--color-border)',
+                  borderRadius: '4px',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              />
+            ) : cluster ? (
+              <>
+                <h2
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: 'var(--color-text)',
+                    margin: 0,
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {cluster.label}
+                </h2>
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--color-text-muted)',
+                    marginTop: '3px',
+                  }}
+                >
+                  {cluster.article_count} article
+                  {cluster.article_count !== 1 ? 's' : ''}
+                  {cluster.earliest && (
+                    <> · {formatPubDate(cluster.earliest)} — {formatPubDate(cluster.latest)}</>
+                  )}
+                </p>
+              </>
+            ) : (
+              <p style={{ fontSize: '13px', color: 'var(--color-danger)', margin: 0 }}>
+                {error}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'var(--color-surface-2)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              padding: '6px 10px',
+              lineHeight: 1,
+              fontSize: '13px',
+              transition: 'border-color 0.15s ease, color 0.15s ease, background 0.15s ease',
+              fontFamily: 'inherit',
+              marginLeft: '16px',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.borderColor = 'var(--color-border-hover)';
+              btn.style.color = 'var(--color-text)';
+              btn.style.background = 'var(--color-border)';
+            }}
+            onMouseLeave={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.borderColor = 'var(--color-border)';
+              btn.style.color = 'var(--color-text-muted)';
+              btn.style.background = 'var(--color-surface-2)';
+            }}
+            aria-label="Close cluster detail"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Articles list */}
+        <div
+          style={{
+            overflowY: 'auto',
+            padding: '0 24px',
+            flex: 1,
+          }}
+        >
+          {isLoading && (
             <div
               style={{
-                width: '180px',
-                height: '16px',
-                background: 'var(--color-border)',
-                borderRadius: '4px',
-                animation: 'pulse 1.5s ease-in-out infinite',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                padding: '16px 0',
               }}
-            />
-          ) : cluster ? (
-            <>
-              <h2
-                style={{
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  color: 'var(--color-text)',
-                  margin: 0,
-                }}
-              >
-                {cluster.label}
-              </h2>
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: 'var(--color-text-muted)',
-                  marginTop: '2px',
-                }}
-              >
-                {cluster.article_count} article
-                {cluster.article_count !== 1 ? 's' : ''}
-                {cluster.earliest && (
-                  <> · {formatPubDate(cluster.earliest)} — {formatPubDate(cluster.latest)}</>
-                )}
-              </p>
-            </>
-          ) : (
-            <p style={{ fontSize: '13px', color: 'var(--color-danger)', margin: 0 }}>
-              {error}
-            </p>
+            >
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{ padding: '14px 0', borderBottom: '1px solid var(--color-border)' }}>
+                  <div
+                    style={{
+                      width: '60px',
+                      height: '12px',
+                      background: 'var(--color-border)',
+                      borderRadius: '3px',
+                      marginBottom: '8px',
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '14px',
+                      background: 'var(--color-border)',
+                      borderRadius: '3px',
+                      marginBottom: '6px',
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: '70%',
+                      height: '12px',
+                      background: 'var(--color-border)',
+                      borderRadius: '3px',
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoading && cluster && (
+            <div>
+              {cluster.articles.map((article, i) => (
+                <ArticleRow key={article.id} article={article} index={i} />
+              ))}
+            </div>
           )}
         </div>
-        <button
-          onClick={onClose}
-          style={{
-            background: 'transparent',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-sm)',
-            color: 'var(--color-text-muted)',
-            cursor: 'pointer',
-            padding: '6px 8px',
-            lineHeight: 1,
-            fontSize: '14px',
-            transition: 'border-color 0.15s ease, color 0.15s ease',
-            fontFamily: 'inherit',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border-hover)';
-            (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)';
-            (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-muted)';
-          }}
-          aria-label="Close cluster detail"
-        >
-          ✕
-        </button>
+
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes modalIn {
+            from { opacity: 0; transform: translate(-50%, -48%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+          }
+        `}</style>
       </div>
-
-      {/* Articles list */}
-      <div
-        style={{
-          overflowY: 'auto',
-          padding: '0 20px',
-          flex: 1,
-        }}
-      >
-        {isLoading && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              padding: '16px 0',
-            }}
-          >
-            {[1, 2, 3].map((i) => (
-              <div key={i} style={{ padding: '14px 0', borderBottom: '1px solid var(--color-border)' }}>
-                <div
-                  style={{
-                    width: '60px',
-                    height: '12px',
-                    background: 'var(--color-border)',
-                    borderRadius: '3px',
-                    marginBottom: '8px',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                  }}
-                />
-                <div
-                  style={{
-                    width: '100%',
-                    height: '14px',
-                    background: 'var(--color-border)',
-                    borderRadius: '3px',
-                    marginBottom: '6px',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                  }}
-                />
-                <div
-                  style={{
-                    width: '70%',
-                    height: '12px',
-                    background: 'var(--color-border)',
-                    borderRadius: '3px',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!isLoading && cluster && (
-          <div>
-            {cluster.articles.map((article, i) => (
-              <ArticleRow key={article.id} article={article} index={i} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }
