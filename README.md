@@ -7,17 +7,20 @@
 ## Screenshots
 
 <div align="center">
-  <img src="docs/assets/homescreen_light.png" alt="Light Mode Story Feed" width="800"/>
+  <img width="959" height="539" alt="Screenshot 2026-09-22 205615" src="https://github.com/user-attachments/assets/6fafad2a-3043-4240-bfcc-4c7d1085c0fe" />
+
   <p><em>Modern, staggered Story Cards grid featuring Framer Motion spring animations</em></p>
   
   <br>
 
-  <img src="docs/assets/homescreen_dark.png" alt="Dark Mode Story Feed" width="800"/>
+  <img width="959" height="465" alt="Screenshot 2026-09-22 205641" src="https://github.com/user-attachments/assets/c347018e-97d8-4a91-b9fa-5aae1aa6de3e" />
+
   <p><em>Seamless Dark Mode integration with local storage persistence</em></p>
 
   <br>
 
-  <img src="docs/assets/modal_detail.png" alt="Cluster Detail Modal" width="800"/>
+  <img width="959" height="539" alt="Screenshot 2026-09-22 205656" src="https://github.com/user-attachments/assets/47b9b175-2ef0-467f-920b-bc341e9736b2" />
+
   <p><em>Centered, animated cluster detail modal with blurred backdrop</em></p>
 </div>
 
