@@ -263,8 +263,8 @@ export function Timeline({ clusters, onClusterClick, selectedClusterId }: Timeli
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    backgroundColor: 'var(--color-surface)',
-                    borderRadius: '2px',
+                    backgroundColor: 'var(--color-surface-2)',
+                    borderRadius: '4px',
                   }}
                 />
 
@@ -279,7 +279,7 @@ export function Timeline({ clusters, onClusterClick, selectedClusterId }: Timeli
                     backgroundColor: selected
                       ? color
                       : color + Math.round(intensity * 120 + 80).toString(16).padStart(2, '0'),
-                    borderRadius: '2px',
+                    borderRadius: '4px',
                     cursor: 'pointer',
                     border: selected
                       ? `1px solid ${color}`

@@ -13,7 +13,7 @@ const SOURCE_COLORS: Record<string, string> = {
   'BBC News': '#bb1919',
   'NPR News': '#0052a5',
   'The Guardian': '#005689',
-  Reuters: '#f63',
+  'Al Jazeera': '#d4a843',
 };
 
 function getSourceColor(source: string): string {
@@ -90,9 +90,9 @@ export function SourceFilter({
               gap: '6px',
               padding: '4px 10px',
               borderRadius: 'var(--radius-sm)',
-              border: `1px solid ${active ? color + '66' : 'var(--color-border)'}`,
-              background: active ? color + '18' : 'transparent',
-              color: active ? '#e2e8f0' : 'var(--color-text-muted)',
+              border: `1px solid ${active ? color + '44' : 'var(--color-border)'}`,
+              background: active ? color + '14' : 'transparent',
+              color: active ? color : 'var(--color-text-muted)',
               fontSize: '12px',
               fontWeight: 500,
               cursor: 'pointer',

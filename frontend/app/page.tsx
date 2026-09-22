@@ -61,6 +61,7 @@ export default function HomePage() {
         style={{
           borderBottom: '1px solid var(--color-border)',
           background: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-sm)',
           position: 'sticky',
           top: 0,
           zIndex: 10,
@@ -182,6 +183,7 @@ export default function HomePage() {
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-md)',
             overflow: 'hidden',
           }}
         >
@@ -235,7 +237,7 @@ export default function HomePage() {
                   border: '1px solid var(--color-border)',
                 }}
               >
-                BBC · NPR · The Guardian · Reuters
+                BBC · NPR · The Guardian · Al Jazeera
               </span>
             )}
           </div>
@@ -329,7 +331,7 @@ export default function HomePage() {
         }}
         role="contentinfo"
       >
-        News Pulse · RSS feeds: BBC News, NPR, The Guardian, Reuters ·{' '}
+        News Pulse · RSS feeds: BBC News, NPR, The Guardian, Al Jazeera ·{' '}
         <a
           href="https://github.com/piyushb03/NewsPulse"
           target="_blank"

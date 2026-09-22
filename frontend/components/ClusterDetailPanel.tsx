@@ -138,6 +138,7 @@ export function ClusterDetailPanel({
         background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-md)',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
