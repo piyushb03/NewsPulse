@@ -30,8 +30,8 @@
 
 | Layer | URL |
 |-------|-----|
-| Frontend | *Deploy to Vercel — see [Deployment](#deployment)* |
-| Backend API | *Deploy to Render — see [Deployment](#deployment)* |
+| Frontend | *https://news-pulse-kappa-seven.vercel.app/ — see [Deployment](#deployment)* |
+| Backend API | *https://newspulse-q6m5.onrender.com/ — see [Deployment](#deployment)* |
 
 ---
 
