@@ -1,0 +1,56 @@
+﻿##############################################################################
+# render.yaml — Render infrastructure-as-code for News Pulse backend.
+#
+# Deploy steps:
+#   1. Push this file to the master branch.
+#   2. In Render dashboard -> "New Blueprint" -> point to this repo.
+#   3. Render will auto-detect this file and create the service.
+#   4. Set the environment variables marked as "sync: false" in the dashboard.
+#
+# Alternatively, configure the service manually using the values below as
+# the exact settings to enter in the Render UI.
+##############################################################################
+
+services:
+  - type: web
+    name: newspulse-backend
+    runtime: node
+    region: oregon
+
+    # Root of the backend source
+    rootDir: backend
+
+    # Install deps, compile TypeScript, then start compiled JS
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index.js
+
+    # Render injects PORT automatically -- the app reads process.env.PORT
+    # Health check so Render knows when the service is ready
+    healthCheckPath: /health
+
+    envVars:
+      # Render injects PORT -- do NOT set it here; let Render control it.
+
+      # SQLite path -- points to the committed scraper/news_pulse.db
+      # On Render, the repo is cloned to /opt/render/project/src/
+      - key: DATABASE_URL
+        value: file:///opt/render/project/src/scraper/news_pulse.db
+
+      # Python 3 executable on Render's Node runtime image
+      - key: PYTHON_PATH
+        value: python3
+
+      # Path to scraper entry point (relative to backend/ working dir)
+      - key: SCRAPER_PATH
+        value: ../scraper/main.py
+
+      # Comma-separated list of allowed CORS origins (no trailing slashes)
+      # Add your current Vercel deployment URL(s) here.
+      - key: CORS_ORIGINS
+        value: https://news-pulse-dz1y7zusq-piyush-baghels-projects.vercel.app,https://news-pulse-kappa-seven.vercel.app
+
+      # Rate limiting (optional -- keep defaults)
+      - key: RATE_LIMIT_MAX
+        value: "5"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
